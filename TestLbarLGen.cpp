@@ -8,7 +8,7 @@
 //
 // author: Vitor Jose Shen
 // at Uppsala University
-// Version 29 Jan 2022
+// Version 26 Feb 2022
 //------------------------------------------------------------------------
 
 // include section
@@ -670,9 +670,12 @@ void testGenllbar(Int_t nrEvents=1000000){
 
         // Protonbar in CMframe below    ////////////////////////////////// 
         Float_t probarTheta = TMath::ATan(pb_protonbarX / pb_protonbarZ);
-        protonbarThetaCM = TMath::RadToDeg()*TMath::ATan(pb_protonbarX / pb_protonbarZ);
+        
+        // 26 Feb updated
+        // the angles represent the other direction compare to hyperon side
+        protonbarThetaCM = 180 - TMath::RadToDeg()*TMath::ATan(pb_protonbarX / pb_protonbarZ);
         protonbarPhiCM = protonbarPhi;
-        protonbarCosThetaCM = TMath::Cos(probarTheta);
+        protonbarCosThetaCM = TMath::Cos(protonbarThetaCM*TMath::DegToRad());
         RadTheta = TMath::DegToRad()*protonbarThetaCM;       // Theta in radian
         RadPhi = TMath::DegToRad()*protonbarPhi;           // Phi in radian
         v_p -> TVector3::SetMagThetaPhi(p_p,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
@@ -691,8 +694,12 @@ void testGenllbar(Int_t nrEvents=1000000){
         if (piplusThetaCM < 0){
             piplusThetaCM = -piplusThetaCM;
         }
+        // 26 Feb updated
+        // the angles represent the other direction compare to hyperon side
+        piplusThetaCM = 180 -  piplusThetaCM; 
+        
         piplusPhiCM = piplusPhi;
-        piplusCosThetaCM = TMath::Cos(pipTheta);
+        piplusCosThetaCM = TMath::Cos( piplusThetaCM*TMath::DegToRad());
         RadTheta = TMath::DegToRad()*piplusThetaCM;       // Theta in radian
         RadPhi = TMath::DegToRad()*piplusPhi;           // Phi in radian
         v_pi -> TVector3::SetMagThetaPhi(p_pi,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
@@ -949,14 +956,32 @@ void testGenllbar(Int_t nrEvents=1000000){
 
         // // Rotation !!
         // // protonRot
-        
+        // // Lambda rest frame
         //**************************************
         // 29 Jan 2021 added
         // Rotation of proton in lambda rest frame update below
-        // by finding new pxpypz from new angles 
+        // by finding new pxpypz from new angles
 
+        // 26 Feb 2021 updated
+        // After rotation of particles in CM frame
+        // Should not also rotate particles in hyperon rest frame
+        // One should do the Lorentz boost in the other way around instead! 
+
+        //  
         Float_t Theta_pUse;
-        Theta_pUse = protonTheta + pThetaCM; 
+        //
+        // Theta_pUse = protonTheta + pThetaCM;    //This is the problem
+        // since pThetaCM is the rotational angle in CM 
+        // but not necessarily the same in lambda Rest Frame...
+
+        // px_protonCMrot remains
+        // find the pz_protonCMrot
+        // pb_protonZ = gamma_lam * (p_protonZ + v_lam * E_p);  //recall
+
+        Float_t pz_protonRotnew;
+        pz_protonRotnew = (pz_protonCMrot / gamma_lam) - (v_lam * E_p); 
+
+        Theta_pUse = TMath::ATan(px_protonCMrot / pz_protonRotnew) * TMath::RadToDeg();
 
         if (Theta_pUse < 0){
             Theta_pUse = -Theta_pUse;
@@ -1009,8 +1034,22 @@ void testGenllbar(Int_t nrEvents=1000000){
         // Rotation of piminus in lambda rest frame update below
         // by finding new pxpypz from new angles
 
+        // 26 Feb 2021 updated
+        // After rotation of particles in CM frame
+        // Should not also rotate particles in hyperon rest frame
+        // One should do the Lorentz boost in the other way around instead! 
+
         Float_t Theta_piminusUse;
-        Theta_piminusUse = piminusTheta + pThetaCM; 
+        // Theta_piminusUse = piminusTheta + pThetaCM;  //not this
+
+        // px_piminusCMrot remains
+        // find the pz_piminusCMrot
+        // pb_piminusZ = gamma_lam * (p_piminusZ + v_lam * E_pi);   //recall
+
+        Float_t pz_piminusRotnew;
+        pz_piminusRotnew = (pz_piminusCMrot / gamma_lam) - (v_lam * E_pi); 
+
+        Theta_piminusUse = TMath::ATan(px_piminusCMrot / pz_piminusRotnew)* TMath::RadToDeg();
 
         if (Theta_piminusUse < 0){
             Theta_piminusUse = -Theta_piminusUse;
@@ -1220,8 +1259,25 @@ void testGenllbar(Int_t nrEvents=1000000){
         // 29 Jan 2021 added
         // Rotation of protonbar in lambdabar rest frame update below
         // by finding new pxpypz from new angles
+        //
+        // 26 Feb 2021 updated
+        // After rotation of particles in CM frame
+        // Should not also rotate particles in antihyperon rest frame
+        // One should do the Lorentz boost in the other way around instead! 
+        //
         Float_t Theta_pbarUse;
-        Theta_pbarUse = protonbarTheta - pbarThetaCM;   //deduction
+        // Theta_pbarUse = protonbarTheta - pbarThetaCM;   //deduction
+        // not this above
+
+        // px_protonbarCMrot remains
+        // find the pz_protonbarCMrot
+        // pb_protonZ = gamma_lam * (p_protonZ + v_lam * E_p);  //recall
+
+        Float_t pz_protonbarRotnew;
+        pz_protonbarRotnew = (pz_protonbarCMrot / gamma_lam) - (v_lam * E_p); 
+
+        Theta_pbarUse = TMath::ATan(px_protonbarCMrot / pz_protonbarRotnew)* TMath::RadToDeg();
+
 
         if (Theta_pbarUse < 0){
             Theta_pbarUse = -Theta_pbarUse;
@@ -1270,9 +1326,26 @@ void testGenllbar(Int_t nrEvents=1000000){
         //**************************************
         // 29 Jan 2021 added
         // Rotation of piplus in lambdabar rest frame update below
-        // by finding new pxpypz from new angles 
+        // by finding new pxpypz from new angles
+
+        //
+        // 26 Feb 2021 updated
+        // After rotation of particles in CM frame
+        // Should not also rotate particles in antihyperon rest frame
+        // One should do the Lorentz boost in the other way around instead!  
+        //
         Float_t Theta_piplusUse;
-        Theta_piplusUse = piplusTheta - pbarThetaCM;    // deduction
+        // Theta_piplusUse = piplusTheta - pbarThetaCM;    // deduction
+        // not this above
+
+        // px_piplusCMrot remains
+        // find the pz_piplusCMrot
+        // pb_piplusZ = gamma_lam * (p_piplusZ + v_lam * E_pi);   //recall
+
+        Float_t pz_piplusRotnew;
+        pz_piplusRotnew = (pz_piplusCMrot / gamma_lam) - (v_lam * E_pi); 
+
+        Theta_piplusUse = TMath::ATan(px_piplusCMrot / pz_piplusRotnew)* TMath::RadToDeg();
 
         if (Theta_piplusUse < 0){
             Theta_piplusUse = -Theta_piplusUse;
