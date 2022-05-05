@@ -8,7 +8,7 @@
 //
 // author: Vitor Jose Shen
 // at Uppsala University
-// Version 26 Feb 2022
+// Version 02 May 2022
 //------------------------------------------------------------------------
 
 // include section
@@ -1342,7 +1342,9 @@ void testGenllbar(Int_t nrEvents=1000000){
         pz_protonbarRotnew = (pz_protonbarCMrot / gamma_lam) - (v_lam * E_p); 
 
         Theta_pbarUse = TMath::ATan(px_protonbarCMrot / pz_protonbarRotnew)* TMath::RadToDeg();
-
+        // May 2022 update
+        // the angles represent the other direction compare to hyperon side
+        Theta_pbarUse = 180 -  Theta_pbarUse; 
 
         if (Theta_pbarUse < 0){
             Theta_pbarUse = -Theta_pbarUse;
@@ -1411,6 +1413,10 @@ void testGenllbar(Int_t nrEvents=1000000){
         pz_piplusRotnew = (pz_piplusCMrot / gamma_lam) - (v_lam * E_pi); 
 
         Theta_piplusUse = TMath::ATan(px_piplusCMrot / pz_piplusRotnew)* TMath::RadToDeg();
+        // May 2022 update
+        // the angles represent the other direction compare to hyperon side
+        Theta_piplusUse = 180 -  Theta_piplusUse; 
+
 
         if (Theta_piplusUse < 0){
             Theta_piplusUse = -Theta_piplusUse;
