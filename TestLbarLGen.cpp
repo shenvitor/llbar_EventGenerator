@@ -7,8 +7,11 @@
 // In LambdaRest, LambdabarRest and CM frame.
 //
 // author: Vitor Jose Shen
+// supervisor: Michael Papenbrock
 // at Uppsala University
+//
 // Version 02 May 2022
+// Revised 20 June 2022
 //------------------------------------------------------------------------
 
 // include section
@@ -29,6 +32,7 @@ int TestLbarLGen(){
     cout << "To test the angle's distribution only, use function: testAngle()" << endl;
     cout << "The overall event generation including 4-momentum and angles, use function: testGenllbar()" << endl;
     // cout << "The number of events can be also set by enter number inside (), the default number is 1 million" << endl;
+    cout << "Check 4-vector conservation, use function: CheckLbarL()" << endl;
     return 0;
 }
 //------------------------------------------------------------------------
@@ -408,9 +412,11 @@ void testGenllbar(Int_t nrEvents=1000000){
     ////////////////////////////////////////
     p_p = (sqrt(pow((pow(m_lam,2)+pow(m_p,2)-pow(m_pi,2)),2)-4*pow(m_lam,2)*pow(m_p,2))) / (2*m_lam) ;  //proton's magnitute of momentum
     // cout << "Momentum magnitute of proton:" << p_p << endl;
-    E_p = (pow(m_lam,2)+pow(m_p,2)-pow(m_pi,2)) / (2*m_lam);  //proton's Energy
+    // E_p = (pow(m_lam,2)+pow(m_p,2)-pow(m_pi,2)) / (2*m_lam);  //proton's Energy
+    E_p = sqrt(m_p*m_p + p_p*p_p); // MP: calculate proton energy from mass and momentum
     // cout << "Energy of proton:" << E_p << endl;
-    E_pi = (pow(m_lam,2)+pow(m_pi,2)-pow(m_p,2)) / (2*m_lam);  //piminus's Energy
+    // E_pi = (pow(m_lam,2)+pow(m_pi,2)-pow(m_p,2)) / (2*m_lam);  //piminus's Energy
+    E_pi = sqrt(m_pi*m_pi + p_p*p_p); // MP: calculate pion energy from mass and momentum
     // cout << "Energy of piminus:" << E_pi << endl;
     p_pi = p_p;                                                //the same piminus's magnitute of momentum
     // cout << "Momentum magnitute of piminus:" << p_pi << endl;
@@ -438,9 +444,16 @@ void testGenllbar(Int_t nrEvents=1000000){
     TVector3 *v_pi = new TVector3;                           // 3-momentum
     TLorentzVector *lv_p = new TLorentzVector;               // 4-momentum
     TLorentzVector *lv_pi = new TLorentzVector;               // 4-momentum
-
     TVector3 *v_l = new TVector3;                           // 3-momentum
     TLorentzVector *lv_l = new TLorentzVector;               // 4-momentum
+
+    // add antihyperon side
+    TVector3 *v_pbar = new TVector3;                           // 3-momentum
+    TVector3 *v_piplus = new TVector3;                           // 3-momentum
+    TLorentzVector *lv_pbar = new TLorentzVector;               // 4-momentum
+    TLorentzVector *lv_piplus = new TLorentzVector;               // 4-momentum
+    TVector3 *v_lbar = new TVector3;                           // 3-momentum
+    TLorentzVector *lv_lbar = new TLorentzVector;               // 4-momentum
 
     // TLorentzVector lv_pi;     
     Float_t RadTheta , RadPhi;
@@ -508,14 +521,14 @@ void testGenllbar(Int_t nrEvents=1000000){
         protonbarTheta = TMath::RadToDeg()*TMath::ACos(protonbarCosTheta); // Theta in degree
         RadTheta = TMath::DegToRad()*protonTheta;       // Theta in radian
         RadPhi = TMath::DegToRad()*protonPhi;           // Phi in radian
-        v_p -> TVector3::SetMagThetaPhi(p_p,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
-        lv_p -> TLorentzVector::SetPxPyPzE(v_p->Px(),v_p->Py(),v_p->Pz(),E_p); 
-        m_protonbar = lv_p -> TLorentzVector::M(); 
-        E_protonbar = lv_p -> TLorentzVector::E();
-        p_protonbar = lv_p -> TLorentzVector::P();
-        px_protonbar = lv_p -> TLorentzVector::Px();
-        py_protonbar = lv_p -> TLorentzVector::Py();
-        pz_protonbar = lv_p -> TLorentzVector::Pz();
+        v_pbar -> TVector3::SetMagThetaPhi(p_p,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        lv_pbar -> TLorentzVector::SetPxPyPzE(v_pbar->Px(),v_pbar->Py(),v_pbar->Pz(),E_p); 
+        m_protonbar = lv_pbar -> TLorentzVector::M(); 
+        E_protonbar = lv_pbar -> TLorentzVector::E();
+        p_protonbar = lv_pbar -> TLorentzVector::P();
+        px_protonbar = lv_pbar -> TLorentzVector::Px();
+        py_protonbar = lv_pbar -> TLorentzVector::Py();
+        pz_protonbar = lv_pbar -> TLorentzVector::Pz();
         pt_protonbar = sqrt(pow(px_protonbar,2)+pow(py_protonbar,2));
 
         // piplus in LamRestFRame below    ////////////////////////////////// 
@@ -530,19 +543,19 @@ void testGenllbar(Int_t nrEvents=1000000){
         RadTheta = TMath::DegToRad()*piplusTheta;              // Theta in radian
         RadPhi = TMath::DegToRad()*piplusPhi;                  // Phi in radian
         piplusCosTheta = TMath::Cos(RadTheta);                 // Cos(Theta)
-        v_pi -> TVector3::SetMagThetaPhi(p_pi,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
-        lv_pi -> TLorentzVector::SetPxPyPzE(v_pi->Px(),v_pi->Py(),v_pi->Pz(),E_pi); 
+        v_piplus -> TVector3::SetMagThetaPhi(p_pi,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        lv_piplus -> TLorentzVector::SetPxPyPzE(v_piplus->Px(),v_piplus->Py(),v_piplus->Pz(),E_pi); 
         // lv_pi.SetPxPyPzE(v_p->Px(),v_p->Py(),v_p->Pz(),E_pi);   
         // m_piminustest = m_pi;
-        m_piplus = lv_pi -> TLorentzVector::M();                
+        m_piplus = lv_piplus -> TLorentzVector::M();                
         // Why it cannot show properly in Tree ?????? When I use double data type...
         // But it works when using float data type.
         // cout << "check Piminus m:" << m_piminus << endl; 
-        E_piplus = lv_pi -> TLorentzVector::E();
-        p_piplus = lv_pi -> TLorentzVector::P();
-        px_piplus = lv_pi -> TLorentzVector::Px();
-        py_piplus = lv_pi -> TLorentzVector::Py();
-        pz_piplus = lv_pi -> TLorentzVector::Pz();
+        E_piplus = lv_piplus -> TLorentzVector::E();
+        p_piplus = lv_piplus -> TLorentzVector::P();
+        px_piplus = lv_piplus -> TLorentzVector::Px();
+        py_piplus = lv_piplus -> TLorentzVector::Py();
+        pz_piplus = lv_piplus -> TLorentzVector::Pz();
         pt_piplus = sqrt(pow(px_piplus,2)+pow(py_piplus,2));
         //////////////////////////////////////////
 
@@ -593,9 +606,14 @@ void testGenllbar(Int_t nrEvents=1000000){
         //(same plane (or phi) ideal situation, only theta considered, e.g. x-z plane but not necessary)  
 
         // 2 May 2022 update: 3D spherical coordinate r theta phi
-        Float_t p_protonX = p_p*TMath::Cos(TMath::DegToRad()*protonPhi)*TMath::Sin(TMath::DegToRad()*protonTheta);      
-        Float_t p_protonY = p_p*TMath::Sin(TMath::DegToRad()*protonPhi)*TMath::Sin(TMath::DegToRad()*protonTheta); 
-        Float_t p_protonZ = p_p*TMath::Cos(TMath::DegToRad()*protonTheta);      
+        // Float_t p_protonX = p_p*TMath::Cos(TMath::DegToRad()*protonPhi)*TMath::Sin(TMath::DegToRad()*protonTheta);      
+        // Float_t p_protonY = p_p*TMath::Sin(TMath::DegToRad()*protonPhi)*TMath::Sin(TMath::DegToRad()*protonTheta); 
+        // Float_t p_protonZ = p_p*TMath::Cos(TMath::DegToRad()*protonTheta);    
+        // MP: Re-calculating the momentum components that have already been generated is error prone
+        // MP: Let's reuse the previous ones
+        Float_t p_protonX = px_proton;
+        Float_t p_protonY = py_proton;
+        Float_t p_protonZ = pz_proton;
 
         Float_t p_piminusX = -p_protonX;
         Float_t p_piminusY = -p_protonY;
@@ -607,33 +625,62 @@ void testGenllbar(Int_t nrEvents=1000000){
         pb_piminusX = p_piminusX;
         pb_protonZ = gamma_lam * (p_protonZ + v_lam * E_p);
         pb_piminusZ = gamma_lam * (p_piminusZ + v_lam * E_pi);
+        // MP: One could have used the boost vector from ROOT here,
+        // MP: but it should not make a difference
+        // MP: Nevertheless, let's try out below
+        TLorentzVector tmp_pCM, tmp_pimCM;
+        tmp_pCM = *lv_p;
+        tmp_pimCM = *lv_pi;
+        tmp_pCM.Boost(-lv_l->BoostVector());
+        tmp_pimCM.Boost(-lv_l->BoostVector());
 
         // Proton in CMframe below    ////////////////////////////////// 
-        Float_t proTheta = TMath::ATan(pb_protonX / pb_protonZ);
-        protonThetaCM = TMath::RadToDeg()*TMath::ATan(pb_protonX / pb_protonZ);
-        protonPhiCM = protonPhi;
-        protonCosThetaCM = TMath::Cos(proTheta);
+        // Float_t proTheta = TMath::ATan(pb_protonX / pb_protonZ);
+        // protonThetaCM = TMath::RadToDeg()*TMath::ATan(pb_protonX / pb_protonZ);
+        // protonPhiCM = protonPhi;
+        // protonCosThetaCM = TMath::Cos(proTheta);
+        //protonThetaCM = tmp_pCM.Theta() ;
+
+        protonThetaCM = tmp_pCM.Theta() * TMath::RadToDeg();
+        protonPhiCM = tmp_pCM.Phi() * TMath::RadToDeg();
+        protonCosThetaCM = tmp_pCM.CosTheta();
+
+        // MP: Use the updated CM vectors to calculate angles
         RadTheta = TMath::DegToRad()*protonThetaCM;       // Theta in radian
-        RadPhi = TMath::DegToRad()*protonPhi;           // Phi in radian
+        RadPhi = TMath::DegToRad()*protonPhiCM;           // Phi in radian
 
         // 2 May 2022 update
         // keep the 4-vector conservation
         // lorentz vector (lv) and p_p (3-vector magnitute)
         // lv_p^2 = E^2 - p_p^2 = m^2
         // since p_p the magnitute changes after boost, E_p also varies.
-        Float_t p_pCM = sqrt(pow(pb_protonX,2)+pow(p_protonY,2)+pow(pb_protonZ,2)); 
+        // Float_t p_pCM = sqrt(pow(pb_protonX,2)+pow(p_protonY,2)+pow(pb_protonZ,2)); 
+        Float_t p_pCM = tmp_pCM.P(); // MP: updated CM momentum
+
+        // MP: Why are v_p and lv_p overwritten here?
+        // MP: The resulting values for px, py are wrong (they should not change)
+        // MP: Something must be going wrong here
         v_p -> TVector3::SetMagThetaPhi(p_pCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
         // lv_p -> TLorentzVector::SetPxPyPzE(v_p->Px(),v_p->Py(),pb_protonZ,E_p); 
         Float_t E_pCM = sqrt(pow(m_p,2)+pow(p_pCM,2));
         lv_p -> TLorentzVector::SetPxPyPzE(v_p->Px(),v_p->Py(),v_p->Pz(),E_pCM); 
 
-        m_protonCM = lv_p -> TLorentzVector::M(); 
-        E_protonCM = lv_p -> TLorentzVector::E();
-        p_protonCM = lv_p -> TLorentzVector::P();
-        px_protonCM = lv_p -> TLorentzVector::Px();
-        py_protonCM = lv_p -> TLorentzVector::Py();
-        pz_protonCM = lv_p -> TLorentzVector::Pz();
-        pt_protonCM = sqrt(pow(px_protonCM,2)+pow(py_protonCM,2));
+        // m_protonCM = lv_p -> TLorentzVector::M(); 
+        // E_protonCM = lv_p -> TLorentzVector::E();
+        // p_protonCM = lv_p -> TLorentzVector::P();
+        // px_protonCM = lv_p -> TLorentzVector::Px();
+        // py_protonCM = lv_p -> TLorentzVector::Py();
+        // pz_protonCM = lv_p -> TLorentzVector::Pz();
+        // pt_protonCM = sqrt(pow(px_protonCM,2)+pow(py_protonCM,2));
+
+        // MP: Let's take the values from the new tmp_pCM
+        m_protonCM = tmp_pCM.M(); 
+        E_protonCM = tmp_pCM.E();
+        p_protonCM = tmp_pCM.P();
+        px_protonCM = tmp_pCM.Px();
+        py_protonCM = tmp_pCM.Py();
+        pz_protonCM = tmp_pCM.Pz();
+        pt_protonCM = tmp_pCM.Pt();
 
         // Piminus in CMframe below    ////////////////////////////////// 
         Float_t pimTheta = TMath::ATan(pb_piminusX / pb_piminusZ);
@@ -645,17 +692,30 @@ void testGenllbar(Int_t nrEvents=1000000){
         //     piminusThetaCM = -piminusThetaCM;
         // }
 
-        piminusPhiCM = piminusPhi;
-        piminusCosThetaCM = TMath::Cos(pimTheta);
-        RadTheta = TMath::DegToRad()*piminusThetaCM;       // Theta in radian
-        RadPhi = TMath::DegToRad()*piminusPhi;           // Phi in radian
+        // piminusPhiCM = piminusPhi;
+        // piminusCosThetaCM = TMath::Cos(pimTheta);
+        // RadTheta = TMath::DegToRad()*piminusThetaCM;       // Theta in radian
+        // RadPhi = TMath::DegToRad()*piminusPhi;           // Phi in radian
+
+        // revised June
+        piminusThetaCM = tmp_pimCM.Theta() * TMath::RadToDeg();
+        piminusPhiCM = tmp_pimCM.Phi() * TMath::RadToDeg();
+        piminusCosThetaCM = tmp_pimCM.CosTheta();
 
         // 2 May 2022 update
         // keep the 4-vector conservation
-        Float_t p_piCM = sqrt(pow(pb_piminusX,2)+pow(p_piminusY,2)+pow(pb_piminusZ,2)); 
-        v_pi -> TVector3::SetMagThetaPhi(p_piCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
-        Float_t E_piCM = sqrt(pow(m_pi,2)+pow(p_piCM,2));
-        lv_pi -> TLorentzVector::SetPxPyPzE(v_pi->Px(),v_pi->Py(),v_pi->Pz(),E_piCM); 
+        // Float_t p_piCM = sqrt(pow(pb_piminusX,2)+pow(p_piminusY,2)+pow(pb_piminusZ,2)); 
+        // v_pi -> TVector3::SetMagThetaPhi(p_piCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        // Float_t E_piCM = sqrt(pow(m_pi,2)+pow(p_piCM,2));
+        // lv_pi -> TLorentzVector::SetPxPyPzE(v_pi->Px(),v_pi->Py(),v_pi->Pz(),E_piCM); 
+
+        //revised June
+        RadTheta = TMath::DegToRad()*piminusThetaCM;       // Theta in radian
+        RadPhi = TMath::DegToRad()*piminusPhiCM;           // Phi in radian
+        Float_t p_pimCM = tmp_pimCM.P();
+        v_pi -> TVector3::SetMagThetaPhi(p_pimCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        Float_t E_pimCM = sqrt(pow(m_pi,2)+pow(p_pimCM,2));
+        lv_pi -> TLorentzVector::SetPxPyPzE(v_pi->Px(),v_pi->Py(),v_pi->Pz(),E_pimCM); 
 
         m_piminusCM = lv_pi -> TLorentzVector::M(); 
         E_piminusCM = lv_pi -> TLorentzVector::E();
@@ -682,24 +742,29 @@ void testGenllbar(Int_t nrEvents=1000000){
         RadTheta = TMath::DegToRad()*lambdabarThetaCM;       // Theta in radian
         RadPhi = TMath::DegToRad()*lambdabarPhiCM;           // Phi in radian
         lambdabarCosThetaCM = TMath::Cos(RadTheta);
-        v_l -> TVector3::SetMagThetaPhi(p_lam,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
-        lv_l -> TLorentzVector::SetPxPyPzE(v_l->Px(),v_l->Py(),v_l->Pz(),E_lam); 
+        v_lbar -> TVector3::SetMagThetaPhi(p_lam,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        lv_lbar -> TLorentzVector::SetPxPyPzE(v_lbar->Px(),v_lbar->Py(),v_lbar->Pz(),E_lam); 
         // m_lambdabarCM = m_lam;
-        m_lambdabarCM = lv_l -> TLorentzVector::M(); 
-        E_lambdabarCM = lv_l -> TLorentzVector::E();
+        m_lambdabarCM = lv_lbar -> TLorentzVector::M(); 
+        E_lambdabarCM = lv_lbar -> TLorentzVector::E();
         // E_lambdabarCM = E_lam;
-        p_lambdabarCM = lv_l->P();
-        px_lambdabarCM = lv_l -> TLorentzVector::Px();
-        py_lambdabarCM = lv_l -> TLorentzVector::Py();
-        pz_lambdabarCM = lv_l -> TLorentzVector::Pz();
+        p_lambdabarCM = lv_lbar->P();
+        px_lambdabarCM = lv_lbar -> TLorentzVector::Px();
+        py_lambdabarCM = lv_lbar -> TLorentzVector::Py();
+        pz_lambdabarCM = lv_lbar -> TLorentzVector::Pz();
         pt_lambdabarCM = sqrt(pow(px_lambdabarCM,2)+pow(py_lambdabarCM,2));
         ////////////////////////////////////////////////////////////////////i///
 
         // 2 May 2022 update
         // Lorentz Boost below (same phi's plane ideal situation only theta changed considering)   
-        Float_t p_protonbarX = p_p*TMath::Cos(TMath::DegToRad()*protonbarPhi)*TMath::Sin(TMath::DegToRad()*protonbarTheta);      
-        Float_t p_protonbarY = p_p*TMath::Sin(TMath::DegToRad()*protonbarPhi)*TMath::Sin(TMath::DegToRad()*protonbarTheta);      
-        Float_t p_protonbarZ = p_p*TMath::Cos(TMath::DegToRad()*protonbarTheta);      
+        // Float_t p_protonbarX = p_p*TMath::Cos(TMath::DegToRad()*protonbarPhi)*TMath::Sin(TMath::DegToRad()*protonbarTheta);      
+        // Float_t p_protonbarY = p_p*TMath::Sin(TMath::DegToRad()*protonbarPhi)*TMath::Sin(TMath::DegToRad()*protonbarTheta);      
+        // Float_t p_protonbarZ = p_p*TMath::Cos(TMath::DegToRad()*protonbarTheta);      
+
+        //revised June
+        Float_t p_protonbarX = px_protonbar;
+        Float_t p_protonbarY = py_protonbar;
+        Float_t p_protonbarZ = pz_protonbar;
 
         Float_t p_piplusX = -p_protonbarX;
         Float_t p_piplusY = -p_protonbarY;
@@ -712,29 +777,55 @@ void testGenllbar(Int_t nrEvents=1000000){
         pb_protonbarZ = gamma_lam * (p_protonbarZ + v_lam * E_p);
         pb_piplusZ = gamma_lam * (p_piplusZ + v_lam * E_pi);
 
+        //revised June
+        TLorentzVector tmp_pbarCM, tmp_pipCM;
+        tmp_pbarCM = *lv_pbar;
+        tmp_pipCM = *lv_piplus;
+        tmp_pbarCM.Boost(-lv_lbar->BoostVector());
+        tmp_pipCM.Boost(-lv_lbar->BoostVector());
+        
         // Protonbar in CMframe below    ////////////////////////////////// 
         Float_t probarTheta = TMath::ATan(pb_protonbarX / pb_protonbarZ);
         
         // 26 Feb updated
         // the angles represent the other direction compare to hyperon side
-        protonbarThetaCM = 180 - TMath::RadToDeg()*TMath::ATan(pb_protonbarX / pb_protonbarZ);
-        protonbarPhiCM = protonbarPhi;
-        protonbarCosThetaCM = TMath::Cos(protonbarThetaCM*TMath::DegToRad());
+        // protonbarThetaCM = 180 - TMath::RadToDeg()*TMath::ATan(pb_protonbarX / pb_protonbarZ);
+        // protonbarPhiCM = protonbarPhi;
+        // protonbarCosThetaCM = TMath::Cos(protonbarThetaCM*TMath::DegToRad());
+
+        //revised June
+        protonbarThetaCM = tmp_pbarCM.Theta() * TMath::RadToDeg();
+        protonbarPhiCM = tmp_pbarCM.Phi() * TMath::RadToDeg();
+        protonbarCosThetaCM = tmp_pbarCM.CosTheta();
+
         RadTheta = TMath::DegToRad()*protonbarThetaCM;       // Theta in radian
-        RadPhi = TMath::DegToRad()*protonbarPhi;           // Phi in radian
+        RadPhi = TMath::DegToRad()*protonbarPhiCM;           // Phi in radian
+
+        Float_t p_pbarCM = tmp_pbarCM.P();
+        Float_t E_pbarCM = sqrt(pow(m_p,2)+pow(p_pbarCM,2));
 
         // 2 May 2022 update
         // Float_t p_pCM = sqrt(pow(pb_protonX,2)+pow(p_protonY,2)+pow(pb_protonZ,2)); 
-        v_p -> TVector3::SetMagThetaPhi(p_pCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        v_pbar -> TVector3::SetMagThetaPhi(p_pbarCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
         // Float_t E_pCM = sqrt(pow(m_p,2)+pow(p_pCM,2));
-        lv_p -> TLorentzVector::SetPxPyPzE(v_p->Px(),v_p->Py(),v_p->Pz(),E_pCM); 
+        lv_pbar -> TLorentzVector::SetPxPyPzE(v_p->Px(),v_p->Py(),v_p->Pz(),E_pbarCM); 
 
-        m_protonbarCM = lv_p -> TLorentzVector::M(); 
-        E_protonbarCM = lv_p -> TLorentzVector::E();
-        p_protonbarCM = lv_p -> TLorentzVector::P();
-        px_protonbarCM = lv_p -> TLorentzVector::Px();
-        py_protonbarCM = lv_p -> TLorentzVector::Py();
-        pz_protonbarCM = lv_p -> TLorentzVector::Pz();
+        // m_protonbarCM = lv_p -> TLorentzVector::M(); 
+        // E_protonbarCM = lv_p -> TLorentzVector::E();
+        // p_protonbarCM = lv_p -> TLorentzVector::P();
+        // px_protonbarCM = lv_p -> TLorentzVector::Px();
+        // py_protonbarCM = lv_p -> TLorentzVector::Py();
+        // pz_protonbarCM = lv_p -> TLorentzVector::Pz();
+
+        //revised June
+        m_protonbarCM = tmp_pbarCM.M(); 
+        E_protonbarCM = tmp_pbarCM.E();
+        p_protonbarCM = tmp_pbarCM.P();
+        px_protonbarCM = tmp_pbarCM.Px();
+        py_protonbarCM = tmp_pbarCM.Py();
+        pz_protonbarCM = tmp_pbarCM.Pz();
+        pt_protonbarCM = tmp_pbarCM.Pt();
+
         pt_protonbarCM = sqrt(pow(px_protonbarCM,2)+pow(py_protonbarCM,2));
 
         // Piplus in CMframe below    ////////////////////////////////// 
@@ -749,25 +840,36 @@ void testGenllbar(Int_t nrEvents=1000000){
 
         // 26 Feb updated
         // the angles represent the other direction compare to hyperon side
-        piplusThetaCM = 180 -  piplusThetaCM; 
-        
-        piplusPhiCM = piplusPhi;
-        piplusCosThetaCM = TMath::Cos( piplusThetaCM*TMath::DegToRad());
+        // piplusThetaCM = 180 -  piplusThetaCM; 
+        // piplusPhiCM = piplusPhi;
+        // piplusCosThetaCM = TMath::Cos( piplusThetaCM*TMath::DegToRad());
+        //
+
+        // revised June
+        piplusThetaCM = tmp_pipCM.Theta() * TMath::RadToDeg();
+        piplusPhiCM = tmp_pipCM.Phi() * TMath::RadToDeg();
+        piplusCosThetaCM = tmp_pipCM.CosTheta(); 
         RadTheta = TMath::DegToRad()*piplusThetaCM;       // Theta in radian
-        RadPhi = TMath::DegToRad()*piplusPhi;           // Phi in radian
+        RadPhi = TMath::DegToRad()*piplusPhiCM;           // Phi in radian
 
         // 2 May 2022 update
         // Float_t p_piCM = sqrt(pow(pb_piminusX,2)+pow(p_piminusY,2)+pow(pb_piminusZ,2)); 
-        v_pi -> TVector3::SetMagThetaPhi(p_piCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        // v_piplus -> TVector3::SetMagThetaPhi(p_piCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
         // Float_t E_piCM = sqrt(pow(m_pi,2)+pow(p_piCM,2));
-        lv_pi -> TLorentzVector::SetPxPyPzE(v_pi->Px(),v_pi->Py(),v_pi->Pz(),E_piCM); 
+        // lv_piplus -> TLorentzVector::SetPxPyPzE(v_piplus->Px(),v_piplus->Py(),v_piplus->Pz(),E_piCM); 
 
-        m_piplusCM = lv_pi -> TLorentzVector::M(); 
-        E_piplusCM = lv_pi -> TLorentzVector::E();
-        p_piplusCM = lv_pi -> TLorentzVector::P();
-        px_piplusCM = lv_pi -> TLorentzVector::Px();
-        py_piplusCM = lv_pi -> TLorentzVector::Py();
-        pz_piplusCM = lv_pi -> TLorentzVector::Pz();
+        // revised June
+        Float_t p_pipCM = tmp_pipCM.P();
+        v_piplus -> TVector3::SetMagThetaPhi(p_pipCM,RadTheta,RadPhi);     // set momentum component by mag,theta,phi
+        Float_t E_pipCM = sqrt(pow(m_pi,2)+pow(p_pipCM,2));
+        lv_piplus -> TLorentzVector::SetPxPyPzE(v_piplus->Px(),v_piplus->Py(),v_piplus->Pz(),E_pipCM); 
+
+        m_piplusCM = lv_piplus -> TLorentzVector::M(); 
+        E_piplusCM = lv_piplus -> TLorentzVector::E();
+        p_piplusCM = lv_piplus -> TLorentzVector::P();
+        px_piplusCM = lv_piplus -> TLorentzVector::Px();
+        py_piplusCM = lv_piplus -> TLorentzVector::Py();
+        pz_piplusCM = lv_piplus -> TLorentzVector::Pz();
         pt_piplusCM = sqrt(pow(px_piplusCM,2)+pow(py_piplusCM,2));
 
         // // //
@@ -860,13 +962,13 @@ void testGenllbar(Int_t nrEvents=1000000){
         py_lambdabarCMrot = p_lam * TMath::Sin(TMath::DegToRad()*lambdabarPhiCM) * TMath::Sin(TMath::DegToRad()*lambdabarThetaCM-TMath::DegToRad()*pThetaCM);
         pz_lambdabarCMrot = p_lam * TMath::Cos(TMath::DegToRad()*lambdabarThetaCM-TMath::DegToRad()*pThetaCM);        
 
-        lv_l -> TLorentzVector::SetPxPyPzE(px_lambdabarCMrot,py_lambdabarCMrot,pz_lambdabarCMrot,E_lam);         
-        lambdabarPhiCMrot = lv_l -> TLorentzVector::Phi()*TMath::RadToDeg();
-        lambdabarThetaCMrot = lv_l -> TLorentzVector::Theta()*TMath::RadToDeg();
-        lambdabarCosThetaCMrot = lv_l -> TLorentzVector::CosTheta();
-        m_lambdabarCMrot = lv_l -> TLorentzVector::M(); 
-        E_lambdabarCMrot = lv_l -> TLorentzVector::E();
-        p_lambdabarCMrot = lv_l->P();
+        lv_lbar -> TLorentzVector::SetPxPyPzE(px_lambdabarCMrot,py_lambdabarCMrot,pz_lambdabarCMrot,E_lam);         
+        lambdabarPhiCMrot = lv_lbar -> TLorentzVector::Phi()*TMath::RadToDeg();
+        lambdabarThetaCMrot = lv_lbar -> TLorentzVector::Theta()*TMath::RadToDeg();
+        lambdabarCosThetaCMrot = lv_lbar -> TLorentzVector::CosTheta();
+        m_lambdabarCMrot = lv_lbar -> TLorentzVector::M(); 
+        E_lambdabarCMrot = lv_lbar -> TLorentzVector::E();
+        p_lambdabarCMrot = lv_lbar->P();
         pt_lambdabarCMrot = sqrt(pow(px_lambdabarCMrot,2)+pow(py_lambdabarCMrot,2));
 
         // lv_l -> TLorentzVector::SetPxPyPzE(lv_lambarRotCM.Px(),lv_lambarRotCM.Py(),lv_lambarRotCM.Pz(),lv_lambarRotCM.E()); 
@@ -941,22 +1043,45 @@ void testGenllbar(Int_t nrEvents=1000000){
         }
 
         //2 May 2022 update p_p to p_pCM
-        px_protonCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUseCM);
-        py_protonCMrot = p_pCM * TMath::Sin(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUseCM);
-        pz_protonCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Theta_pUseCM);
+        // px_protonCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUseCM);
+        // py_protonCMrot = p_pCM * TMath::Sin(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUseCM);
+        // pz_protonCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Theta_pUseCM);
+
+        // MP: Take angles from tmp_pCM and try different rotation
+        // TVector3 tmp_p3CMRot;
+        TLorentzVector tmp_pCMRot = tmp_pCM;
+        // tmp_p3CMRot.SetPtThetaPhi(tmp_pCM.P(), Theta_pUseCM * TMath::DegToRad(), Phi_pUse * TMath::DegToRad());
+        tmp_pCMRot.RotateX(lv_l->Theta());
+        tmp_pCMRot.RotateZ(lv_l->Phi());
+        // tmp_p3CMRot.Print();
+        px_protonCMrot = tmp_pCMRot.Px();
+        py_protonCMrot = tmp_pCMRot.Py();
+        pz_protonCMrot = tmp_pCMRot.Pz();
+        // cout << px_protonCMrot << " " << py_protonCMrot << " " << pz_protonCMrot << endl;
+        // TLorentzVector tmp_pCMRot(tmp_p3CMRot,sqrt(m_p*m_p + tmp_pCM.P()*tmp_pCM.P()));
+        // tmp_pCMRot.Print();
 
         //2 May 2022 update E_p to E_pCM 
         // lv_p -> TLorentzVector::SetPxPyPzE(lv_proRotCM.Px(),lv_proRotCM.Py(),lv_proRotCM.Pz(),lv_proRotCM.E()); 
         lv_p -> TLorentzVector::SetPxPyPzE(px_protonCMrot,py_protonCMrot,pz_protonCMrot,E_pCM); 
 
-        protonPhiCMrot = lv_p -> TLorentzVector::Phi() * TMath::RadToDeg();
-        protonThetaCMrot = lv_p -> TLorentzVector::Theta() * TMath::RadToDeg();
-        protonCosThetaCMrot = lv_p -> TLorentzVector::CosTheta();
+        // protonPhiCMrot = lv_p -> TLorentzVector::Phi() * TMath::RadToDeg();
+        // protonThetaCMrot = lv_p -> TLorentzVector::Theta() * TMath::RadToDeg();
+        // protonCosThetaCMrot = lv_p -> TLorentzVector::CosTheta();
 
-        m_protonCMrot = lv_p -> TLorentzVector::M(); 
-        E_protonCMrot = lv_p -> TLorentzVector::E();
-        p_protonCMrot = lv_p->P();
-        pt_protonCMrot = sqrt(pow(px_protonCMrot,2)+pow(py_protonCMrot,2));
+        // m_protonCMrot = lv_p -> TLorentzVector::M(); 
+        // E_protonCMrot = lv_p -> TLorentzVector::E();
+        // p_protonCMrot = lv_p->P();
+        // pt_protonCMrot = sqrt(pow(px_protonCMrot,2)+pow(py_protonCMrot,2));
+
+        protonPhiCMrot = tmp_pCMRot.Phi() * TMath::RadToDeg();
+        protonThetaCMrot = tmp_pCMRot.Theta() * TMath::RadToDeg();
+        protonCosThetaCMrot = tmp_pCMRot.CosTheta();
+
+        m_protonCMrot = tmp_pCMRot.M(); 
+        E_protonCMrot = tmp_pCMRot.E();
+        p_protonCMrot = tmp_pCMRot.P();
+        pt_protonCMrot = tmp_pCMRot.Pt();
 
 
         // // Rotation !!
@@ -997,13 +1122,24 @@ void testGenllbar(Int_t nrEvents=1000000){
         }
 
         // 2 May 2022 update p_pi to p_piCM
-        px_piminusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUseCM);
-        py_piminusCMrot = p_piCM * TMath::Sin(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUseCM);
-        pz_piminusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Theta_piminusUseCM);
+        // px_piminusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUseCM);
+        // py_piminusCMrot = p_piCM * TMath::Sin(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUseCM);
+        // pz_piminusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Theta_piminusUseCM);
+
+        // Revised June
+        // Take angles from tmp_pimCM and try different rotation
+        TLorentzVector tmp_pimCMRot = tmp_pimCM;
+        // tmp_p3CMRot.SetPtThetaPhi(tmp_pCM.P(), Theta_pUseCM * TMath::DegToRad(), Phi_pUse * TMath::DegToRad());
+        tmp_pimCMRot.RotateX(lv_l->Theta());
+        tmp_pimCMRot.RotateZ(lv_l->Phi());
+        // tmp_p3CMRot.Print();
+        px_piminusCMrot = tmp_pimCMRot.Px();
+        py_piminusCMrot = tmp_pimCMRot.Py();
+        pz_piminusCMrot = tmp_pimCMRot.Pz();
 
         // 2 May 2022 update E_pi to E_piCM
         // lv_p -> TLorentzVector::SetPxPyPzE(lv_proRotCM.Px(),lv_proRotCM.Py(),lv_proRotCM.Pz(),lv_proRotCM.E()); 
-        lv_pi -> TLorentzVector::SetPxPyPzE(px_piminusCMrot,py_piminusCMrot,pz_piminusCMrot,E_piCM); 
+        lv_pi -> TLorentzVector::SetPxPyPzE(px_piminusCMrot,py_piminusCMrot,pz_piminusCMrot,E_pimCM); 
 
         piminusPhiCMrot = lv_pi -> TLorentzVector::Phi() * TMath::RadToDeg();
         piminusThetaCMrot = lv_pi -> TLorentzVector::Theta() * TMath::RadToDeg();
@@ -1051,9 +1187,20 @@ void testGenllbar(Int_t nrEvents=1000000){
             Theta_pUse = 360 - Theta_pUse;
         }
 
-        px_protonRot = p_p * TMath::Cos(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUse);
-        py_protonRot = p_p * TMath::Sin(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUse);
-        pz_protonRot = p_p * TMath::Cos(TMath::DegToRad()*Theta_pUse);
+        // px_protonRot = p_p * TMath::Cos(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUse);
+        // py_protonRot = p_p * TMath::Sin(TMath::DegToRad()*Phi_pUse) * TMath::Sin(TMath::DegToRad()*Theta_pUse);
+        // pz_protonRot = p_p * TMath::Cos(TMath::DegToRad()*Theta_pUse);
+
+        //revised June
+        TLorentzVector tmp_p, tmp_pim;
+        tmp_p = *lv_p;
+        tmp_pim = *lv_pi;
+        tmp_p.Boost(lv_l->BoostVector());
+        tmp_pim.Boost(lv_l->BoostVector());
+
+        px_protonRot = tmp_p.Px();
+        py_protonRot = tmp_p.Py();
+        pz_protonRot = tmp_p.Pz();
 
         lv_p -> TLorentzVector::SetPxPyPzE(px_protonRot,py_protonRot,pz_protonRot,E_p); 
 
@@ -1119,9 +1266,19 @@ void testGenllbar(Int_t nrEvents=1000000){
             Theta_piminusUse = 360 - Theta_piminusUse;
         }
 
-        px_piminusRot = p_pi * TMath::Cos(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUse);
-        py_piminusRot = p_pi * TMath::Sin(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUse);
-        pz_piminusRot = p_pi * TMath::Cos(TMath::DegToRad()*Theta_piminusUse);
+        // //revised June
+        // TLorentzVector tmp_p, tmp_pim;
+        // tmp_p = *lv_p;
+        // tmp_pim = *lv_pi;
+        // tmp_p.Boost(lv_l->BoostVector());
+        // tmp_pim.Boost(lv_l->BoostVector());
+        px_piminusRot = tmp_pim.Px();
+        py_piminusRot = tmp_pim.Py();
+        pz_piminusRot = tmp_pim.Pz();
+
+        // px_piminusRot = p_pi * TMath::Cos(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUse);
+        // py_piminusRot = p_pi * TMath::Sin(TMath::DegToRad()*Phi_piminusUse) * TMath::Sin(TMath::DegToRad()*Theta_piminusUse);
+        // pz_piminusRot = p_pi * TMath::Cos(TMath::DegToRad()*Theta_piminusUse);
 
         // lv_p -> TLorentzVector::SetPxPyPzE(lv_proRotCM.Px(),lv_proRotCM.Py(),lv_proRotCM.Pz(),lv_proRotCM.E()); 
         
@@ -1157,7 +1314,6 @@ void testGenllbar(Int_t nrEvents=1000000){
         // pz_piminusRot = lv_pi -> TLorentzVector::Pz();
         // pt_piminusRot = sqrt(pow(px_piminusRot,2)+pow(py_piminusRot,2));
         
-
 
         /////////////////////////////////////////////////////////////////////////////
         // // Rotation !!
@@ -1198,20 +1354,30 @@ void testGenllbar(Int_t nrEvents=1000000){
         }
 
         // 2 May 2022 update p_p to p_pCM
-        px_protonbarCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUseCM);
-        py_protonbarCMrot = p_pCM * TMath::Sin(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUseCM);
-        pz_protonbarCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Theta_pbarUseCM);
+        // px_protonbarCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUseCM);
+        // py_protonbarCMrot = p_pCM * TMath::Sin(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUseCM);
+        // pz_protonbarCMrot = p_pCM * TMath::Cos(TMath::DegToRad()*Theta_pbarUseCM);
+
+        // revised June
+        // Take angles from tmp_pbarCM and do rotation
+        TLorentzVector tmp_pbarCMRot = tmp_pbarCM;
+        tmp_pbarCMRot.RotateX(lv_lbar->Theta());
+        tmp_pbarCMRot.RotateZ(lv_lbar->Phi());
+        // tmp_p3CMRot.Print();
+        px_protonbarCMrot = tmp_pbarCMRot.Px();
+        py_protonbarCMrot = tmp_pbarCMRot.Py();
+        pz_protonbarCMrot = tmp_pbarCMRot.Pz();
 
         // 2 May 2022 update E_p to E_pCM
-        lv_p -> TLorentzVector::SetPxPyPzE(px_protonbarCMrot,py_protonbarCMrot,pz_protonbarCMrot,E_pCM); 
+        lv_pbar -> TLorentzVector::SetPxPyPzE(px_protonbarCMrot,py_protonbarCMrot,pz_protonbarCMrot,E_pbarCM); 
 
-        protonbarPhiCMrot = lv_p -> TLorentzVector::Phi() * TMath::RadToDeg();
-        protonbarThetaCMrot = lv_p -> TLorentzVector::Theta() * TMath::RadToDeg();
-        protonbarCosThetaCMrot = lv_p -> TLorentzVector::CosTheta();
+        protonbarPhiCMrot = lv_pbar -> TLorentzVector::Phi() * TMath::RadToDeg();
+        protonbarThetaCMrot = lv_pbar -> TLorentzVector::Theta() * TMath::RadToDeg();
+        protonbarCosThetaCMrot = lv_pbar -> TLorentzVector::CosTheta();
 
-        m_protonbarCMrot = lv_p -> TLorentzVector::M(); 
-        E_protonbarCMrot = lv_p -> TLorentzVector::E();
-        p_protonbarCMrot = lv_p->P();
+        m_protonbarCMrot = lv_pbar -> TLorentzVector::M(); 
+        E_protonbarCMrot = lv_pbar -> TLorentzVector::E();
+        p_protonbarCMrot = lv_pbar->P();
         pt_protonbarCMrot = sqrt(pow(px_protonbarCMrot,2)+pow(py_protonbarCMrot,2));
 
 
@@ -1248,12 +1414,10 @@ void testGenllbar(Int_t nrEvents=1000000){
         // pz_protonbarCMrot = lv_p -> TLorentzVector::Pz();
         // pt_protonbarCMrot = sqrt(pow(px_protonbarCMrot,2)+pow(py_protonbarCMrot,2));
 
-
         // // Rotation !!
         // // piplusCMrot
         // lR_antihyperon.Rotate(-TMath::DegToRad()*piplusThetaCM,rotAxisAntiHyperon); 
  
-
         //**************************************
         // 29 Jan 2021 added
         // Rotation of piplus CM update below
@@ -1279,23 +1443,31 @@ void testGenllbar(Int_t nrEvents=1000000){
         }
 
         // 2 May 2022 update p_pi to p_piCM
-        px_piplusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUseCM);
-        py_piplusCMrot = p_piCM * TMath::Sin(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUseCM);
-        pz_piplusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Theta_piplusUseCM);
+        // px_piplusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUseCM);
+        // py_piplusCMrot = p_piCM * TMath::Sin(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUseCM);
+        // pz_piplusCMrot = p_piCM * TMath::Cos(TMath::DegToRad()*Theta_piplusUseCM);
+
+        // revised June
+        // Take angles from tmp_pbarCM and do rotation
+        TLorentzVector tmp_pipCMRot = tmp_pipCM;
+        tmp_pipCMRot.RotateX(lv_lbar->Theta());
+        tmp_pipCMRot.RotateZ(lv_lbar->Phi());
+        // tmp_p3CMRot.Print();
+        px_piplusCMrot = tmp_pipCMRot.Px();
+        py_piplusCMrot = tmp_pipCMRot.Py();
+        pz_piplusCMrot = tmp_pipCMRot.Pz();
 
         // 2 May 2022 update E_pi to E_piCM
-        lv_pi -> TLorentzVector::SetPxPyPzE(px_piplusCMrot,py_piplusCMrot,pz_piplusCMrot,E_piCM); 
+        lv_piplus -> TLorentzVector::SetPxPyPzE(px_piplusCMrot,py_piplusCMrot,pz_piplusCMrot,E_pipCM); 
 
-        piplusPhiCMrot = lv_pi -> TLorentzVector::Phi() * TMath::RadToDeg();
-        piplusThetaCMrot = lv_pi -> TLorentzVector::Theta() * TMath::RadToDeg();
-        piplusCosThetaCMrot = lv_pi -> TLorentzVector::CosTheta();
+        piplusPhiCMrot = lv_piplus -> TLorentzVector::Phi() * TMath::RadToDeg();
+        piplusThetaCMrot = lv_piplus -> TLorentzVector::Theta() * TMath::RadToDeg();
+        piplusCosThetaCMrot = lv_piplus -> TLorentzVector::CosTheta();
 
-        m_piplusCMrot = lv_pi -> TLorentzVector::M(); 
-        E_piplusCMrot = lv_pi -> TLorentzVector::E();
-        p_piplusCMrot = lv_pi->P();
+        m_piplusCMrot = lv_piplus -> TLorentzVector::M(); 
+        E_piplusCMrot = lv_piplus -> TLorentzVector::E();
+        p_piplusCMrot = lv_piplus->P();
         pt_piplusCMrot = sqrt(pow(px_piplusCMrot,2)+pow(py_piplusCMrot,2));
-
-
 
         // TLorentzVector lv_pipRotCM;
         // lv_pipRotCM.SetPxPyPzE(px_piplusCM,py_piplusCM,pz_piplusCM,E_piplusCM);
@@ -1353,19 +1525,30 @@ void testGenllbar(Int_t nrEvents=1000000){
             Theta_pbarUse = 360 - Theta_pbarUse;
         }
 
-        px_protonbarRot = p_p * TMath::Cos(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUse);
-        py_protonbarRot = p_p * TMath::Sin(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUse);
-        pz_protonbarRot = p_p * TMath::Cos(TMath::DegToRad()*Theta_pbarUse);
+        //revised June
+        TLorentzVector tmp_pbar, tmp_pip;
+        tmp_pbar = *lv_pbar;
+        tmp_pip = *lv_piplus;
+        tmp_pbar.Boost(lv_lbar->BoostVector());
+        tmp_pip.Boost(lv_lbar->BoostVector());
 
-        lv_p -> TLorentzVector::SetPxPyPzE(px_protonbarRot,py_protonbarRot,pz_protonbarRot,E_p); 
+        px_protonbarRot = tmp_pbar.Px();
+        py_protonbarRot = tmp_pbar.Py();
+        pz_protonbarRot = tmp_pbar.Pz();
 
-        protonbarRotPhi = lv_p -> TLorentzVector::Phi() * TMath::RadToDeg();
-        protonbarRotTheta = lv_p -> TLorentzVector::Theta() * TMath::RadToDeg();
-        protonbarRotCosTheta = lv_p -> TLorentzVector::CosTheta();
+        // px_protonbarRot = p_p * TMath::Cos(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUse);
+        // py_protonbarRot = p_p * TMath::Sin(TMath::DegToRad()*Phi_pbarUse) * TMath::Sin(TMath::DegToRad()*Theta_pbarUse);
+        // pz_protonbarRot = p_p * TMath::Cos(TMath::DegToRad()*Theta_pbarUse);
 
-        m_protonbarRot = lv_p -> TLorentzVector::M(); 
-        E_protonbarRot = lv_p -> TLorentzVector::E();
-        p_protonbarRot = lv_p->P();
+        lv_pbar -> TLorentzVector::SetPxPyPzE(px_protonbarRot,py_protonbarRot,pz_protonbarRot,E_p); 
+
+        protonbarRotPhi = lv_pbar -> TLorentzVector::Phi() * TMath::RadToDeg();
+        protonbarRotTheta = lv_pbar -> TLorentzVector::Theta() * TMath::RadToDeg();
+        protonbarRotCosTheta = lv_pbar -> TLorentzVector::CosTheta();
+
+        m_protonbarRot = lv_pbar -> TLorentzVector::M(); 
+        E_protonbarRot = lv_pbar -> TLorentzVector::E();
+        p_protonbarRot = lv_pbar->P();
         pt_protonbarRot = sqrt(pow(px_protonbarRot,2)+pow(py_protonbarRot,2));
 
         // TLorentzVector lv_probarRot;
@@ -1425,19 +1608,29 @@ void testGenllbar(Int_t nrEvents=1000000){
             Theta_piplusUse = 360 - Theta_piplusUse;
         }
 
-        px_piplusRot = p_pi * TMath::Cos(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUse);
-        py_piplusRot = p_pi * TMath::Sin(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUse);
-        pz_piplusRot = p_pi * TMath::Cos(TMath::DegToRad()*Theta_piplusUse);
+        // //revised June
+        // TLorentzVector tmp_pbar, tmp_pip;
+        // tmp_pbar = *lv_pbar;
+        // tmp_pip = *lv_piplus;
+        // tmp_pbar.Boost(lv_lbar->BoostVector());
+        // tmp_pip.Boost(lv_lbar->BoostVector());
+        px_piplusRot = tmp_pip.Px();
+        py_piplusRot = tmp_pip.Py();
+        pz_piplusRot = tmp_pip.Pz();
 
-        lv_pi -> TLorentzVector::SetPxPyPzE(px_piplusRot,py_piplusRot,pz_piplusRot,E_pi); 
+        // px_piplusRot = p_pi * TMath::Cos(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUse);
+        // py_piplusRot = p_pi * TMath::Sin(TMath::DegToRad()*Phi_piplusUse) * TMath::Sin(TMath::DegToRad()*Theta_piplusUse);
+        // pz_piplusRot = p_pi * TMath::Cos(TMath::DegToRad()*Theta_piplusUse);
 
-        piplusRotPhi = lv_pi -> TLorentzVector::Phi() * TMath::RadToDeg();
-        piplusRotTheta = lv_pi -> TLorentzVector::Theta() * TMath::RadToDeg();
-        piplusRotCosTheta = lv_pi -> TLorentzVector::CosTheta();
+        lv_piplus -> TLorentzVector::SetPxPyPzE(px_piplusRot,py_piplusRot,pz_piplusRot,E_pi); 
 
-        m_piplusRot = lv_pi -> TLorentzVector::M(); 
-        E_piplusRot = lv_pi -> TLorentzVector::E();
-        p_piplusRot = lv_pi->P();
+        piplusRotPhi = lv_piplus -> TLorentzVector::Phi() * TMath::RadToDeg();
+        piplusRotTheta = lv_piplus -> TLorentzVector::Theta() * TMath::RadToDeg();
+        piplusRotCosTheta = lv_piplus -> TLorentzVector::CosTheta();
+
+        m_piplusRot = lv_piplus -> TLorentzVector::M(); 
+        E_piplusRot = lv_piplus -> TLorentzVector::E();
+        p_piplusRot = lv_piplus->P();
         pt_piplusRot = sqrt(pow(px_piplusRot,2)+pow(py_piplusRot,2));
 
 
