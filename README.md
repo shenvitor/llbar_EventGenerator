@@ -1,5 +1,8 @@
 # llbar_EventGenerator
-Event generator for pbar+p->lambdabar+lambda and their decay particles p, pi-, and pbar, pi+, that focus on angular and momentum distribution
+Event generator for $\bar{p}+p \to \bar{\Lambda}+\Lambda$ and their decay particles $p$, $\pi^-$, and $\bar{p}$, $\pi^+$, that focus on angular and momentum distribution
 
-Now there is only a root macro file which is obviously run on ROOT.
-It might be developed in to a class in the future!
+Remark:
+It is in the format of a root macro file which is run on ROOT.
+
+Outlook:
+It might be a good idea to develop this into a class in the future!
